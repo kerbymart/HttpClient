@@ -14,4 +14,19 @@
 package org.cyberquarks.http.exception;
 
 public class TimeoutException extends HttpException {
+    public TimeoutException() {
+        super();
+    }
+
+    public TimeoutException(String message) {
+        super(message);
+    }
+
+    public TimeoutException(Throwable cause) {
+        super(cause);
+    }
+
+    public TimeoutException(String message, Throwable cause) {
+        super(message, cause);
+    }
 }

@@ -35,11 +35,15 @@ public class Header {
     if (this == obj) return true;
     if (obj == null || getClass() != obj.getClass()) return false;
     Header header = (Header) obj;
-    return name.equals(header.name) && value.equals(header.value);
+    return (name == null ? header.name == null : name.equals(header.name)) &&
+           (value == null ? header.value == null : value.equals(header.value));
   }
 
   @Override
   public int hashCode() {
+    if (name == null || value == null) {
+      return 0;
+    }
     return name.hashCode() * 31 + value.hashCode();
   }
 }

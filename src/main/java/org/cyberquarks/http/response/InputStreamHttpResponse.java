@@ -23,15 +23,21 @@ public class InputStreamHttpResponse implements HttpResponse<InputStream> {
   private Set<Header> headers;
   private InputStream body;
 
+  public InputStreamHttpResponse(Integer code, Set<Header> headers, InputStream body) {
+    this.code = code;
+    this.headers = headers;
+    this.body = body;
+  }
+
   @Override public Integer getCode() {
-    return null;
+    return code;
   }
 
   @Override public Set<Header> getHeaders() {
-    return null;
+    return headers;
   }
 
   @Override public InputStream getBody() {
-    return null;
+    return body;
   }
 }

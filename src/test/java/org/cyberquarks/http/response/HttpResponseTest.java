@@ -13,31 +13,25 @@
  */
 package org.cyberquarks.http.response;
 
-import java.util.Set;
 import org.cyberquarks.http.request.Header;
-import org.json.JSONObject;
+import org.junit.Test;
 
-public class JSONObjectHttpResponse implements HttpResponse<JSONObject> {
+import java.util.HashSet;
+import java.util.Set;
 
-  private Integer code;
-  private Set<Header> headers;
-  private JSONObject body;
+import static org.junit.Assert.*;
 
-  public JSONObjectHttpResponse(Integer code, Set<Header> headers, JSONObject body) {
-    this.code = code;
-    this.headers = headers;
-    this.body = body;
-  }
+public class HttpResponseTest {
 
-  @Override public Integer getCode() {
-    return code;
-  }
-
-  @Override public Set<Header> getHeaders() {
-    return headers;
-  }
-
-  @Override public JSONObject getBody() {
-    return body;
-  }
+    @Test
+    public void HttpResponse_with_code_headers_and_body_should_be_created() {
+        Integer code = 200;
+        Set<Header> headers = new HashSet<>();
+        headers.add(new Header("Content-Type", "application/json"));
+        String body = "test";
+        HttpResponse<String> response = new StringHttpResponse(code, headers, body);
+        assertEquals(code, response.getCode());
+        assertEquals(headers, response.getHeaders());
+        assertEquals(body, response.getBody());
+    }
 }
