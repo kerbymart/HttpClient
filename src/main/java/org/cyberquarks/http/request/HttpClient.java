@@ -14,7 +14,7 @@
 package org.cyberquarks.http.request;
 
 import org.cyberquarks.http.HttpStringBody;
-import org.cyberquarks.http.exception.AccessDeniedException;
+import org.cyberquarks.http.exception.HttpException;
 import org.cyberquarks.http.response.HttpResponse;
 import org.cyberquarks.http.HttpBody;
 import org.cyberquarks.http.response.StringHttpResponse;
@@ -38,28 +38,28 @@ public class HttpClient {
   private static final int DEFAULT_TIMEOUT = 30000; // 30 seconds
 
   @Async
-  public static native HttpResponse get(GetRequest request) throws AccessDeniedException, IOException;
+  public static native HttpResponse get(GetRequest request) throws HttpException, IOException;
 
   private static void get(GetRequest request, AsyncCallback<HttpResponse> callback) {
     executeAsync(request, "GET", null, callback);
   }
 
   @Async
-  public static native HttpResponse put(PutRequest request) throws AccessDeniedException, IOException;
+  public static native HttpResponse put(PutRequest request) throws HttpException, IOException;
 
   private static void put(PutRequest request, AsyncCallback<HttpResponse> callback) {
     executeAsync(request, "PUT", request.getBody(), callback);
   }
 
   @Async
-  public static native HttpResponse post(PostRequest request) throws AccessDeniedException, IOException;
+  public static native HttpResponse post(PostRequest request) throws HttpException, IOException;
 
   private static void post(PostRequest request, AsyncCallback<HttpResponse> callback) {
     executeAsync(request, "POST", request.getBody(), callback);
   }
 
   @Async
-  public static native HttpResponse delete(DeleteRequest request) throws AccessDeniedException, IOException;
+  public static native HttpResponse delete(DeleteRequest request) throws HttpException, IOException;
 
   private static void delete(DeleteRequest request, AsyncCallback<HttpResponse> callback) {
     executeAsync(request, "DELETE", null, callback);
@@ -100,11 +100,6 @@ public class HttpClient {
 
                     if (status == 0) {
                       callback.error(new IOException("Request failed - network error or timeout"));
-                      return;
-                    }
-
-                    if (status == 403 || status == 401) {
-                      callback.error(new AccessDeniedException());
                       return;
                     }
 

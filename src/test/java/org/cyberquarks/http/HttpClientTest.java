@@ -1,6 +1,5 @@
 package org.cyberquarks.http;
 
-import org.cyberquarks.http.exception.AccessDeniedException;
 import org.cyberquarks.http.request.DeleteRequest;
 import org.cyberquarks.http.request.GetRequest;
 import org.cyberquarks.http.request.Header;
@@ -133,7 +132,7 @@ public class HttpClientTest {
     assertNotNull(response.getBody());
   }
 
-  @Test(expected = AccessDeniedException.class)
+  @Test
   public void Basic_auth_with_incorrect_credentials_should_return_401() throws Exception {
     Set<Header> headers = new HashSet<>();
     String auth = "wronguser:wrongpassword";
@@ -142,7 +141,7 @@ public class HttpClientTest {
 
     GetRequest request = new GetRequest("http://httpbin.org/basic-auth/user/password", headers, new HashMap<>());
     HttpResponse<InputStream> response = HttpClient.get(request);
-    assertEquals(Integer.valueOf(400), response.getCode());
+    assertEquals(Integer.valueOf(401), response.getCode());
   }
 
   @Test
