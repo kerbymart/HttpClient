@@ -18,6 +18,7 @@ import org.cyberquarks.http.response.HttpResponse;
 import java.io.InputStream;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Set;
 import java.util.logging.Logger;
 import org.cyberquarks.http.request.DeleteRequest;
 import org.cyberquarks.http.request.GetRequest;
@@ -32,6 +33,8 @@ import org.junit.runner.RunWith;
 import org.junit.runners.MethodSorters;
 import org.teavm.junit.SkipJVM;
 import org.teavm.junit.TeaVMTestRunner;
+
+import static junit.framework.TestCase.assertNotNull;
 
 /**
  * Unit tests of {@link HttpClientTest}
@@ -52,34 +55,64 @@ public class HttpClientTest {
 
   @Test
   public void testPostRequest() throws Exception {
+    Set<Header> headers = new HashSet<>();
+    headers.add(new Header("Content-Type", "application/json"));
+    headers.add(new Header("Accept", "application/json"));
+
     PostRequest request =
-        new PostRequest("http://httpbin.org/post", new HttpStringBody("hello world"));
+        new PostRequest("http://httpbin.org/post", headers, new HttpStringBody("hello world"));
     HttpResponse<InputStream> response = HttpClient.post(request);
     InputStream body = response.getBody();
+    assertNotNull(body);
   }
 
   @Test
   public void testPostInputStreamRequest() throws Exception {
+    Set<Header> headers = new HashSet<>();
+    headers.add(new Header("Content-Type", "application/json"));
+    headers.add(new Header("Accept", "application/json"));
+
     InputStream inputStream = null;
     PostRequest request =
-        new PostRequest("http://httpbin.org/post", new HttpInputStreamBody(inputStream));
+        new PostRequest("http://httpbin.org/post", headers, new HttpInputStreamBody(inputStream));
     HttpResponse<String> response = HttpClient.post(request);
     String body = response.getBody();
+    assertNotNull(body);
   }
-
 
   @Test
   public void testPutRequest() throws Exception {
-    PutRequest request = new PutRequest("", new HashSet<Header>(), new HashMap<>(), null);
+    Set<Header> headers = new HashSet<>();
+    headers.add(new Header("Content-Type", "application/json"));
+    headers.add(new Header("Accept", "application/json"));
+
+    PutRequest request = new PutRequest("http://httpbin.org/put", headers, new HashMap<>(), new HttpStringBody("hello world"));
+    HttpResponse<InputStream> response = HttpClient.put(request);
+    InputStream body = response.getBody();
+    assertNotNull(body);
   }
 
   @Test
   public void testGetRequest() throws Exception {
-    GetRequest request = new GetRequest("", new HashSet<Header>(), new HashMap<>());
+    Set<Header> headers = new HashSet<>();
+    headers.add(new Header("Content-Type", "application/json"));
+    headers.add(new Header("Accept", "application/json"));
+
+    GetRequest request = new GetRequest("http://httpbin.org/get", headers, new HashMap<>());
+    HttpResponse<InputStream> response = HttpClient.get(request);
+    InputStream body = response.getBody();
+    assertNotNull(body);
   }
 
   @Test
   public void testDeleteRequest() throws Exception {
-    DeleteRequest request = new DeleteRequest("", new HashSet<Header>(), new HashMap<>());
+    Set<Header> headers = new HashSet<>();
+    headers.add(new Header("Content-Type", "application/json"));
+    headers.add(new Header("Accept", "application/json"));
+
+    DeleteRequest request = new DeleteRequest("http://httpbin.org/delete", headers, new HashMap<>());
+    HttpResponse<InputStream> response = HttpClient.delete(request);
+    InputStream body = response.getBody();
+    assertNotNull(body);
   }
 }

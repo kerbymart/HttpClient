@@ -29,7 +29,7 @@ public class StringHttpResponse implements HttpResponse<String> {
    * @param headers the response headers
    * @param body    the response body
    */
-  protected StringHttpResponse(Integer code, Set<Header> headers, String body) {
+  public StringHttpResponse(Integer code, Set<Header> headers, String body) {
     this.code = code;
     this.headers = headers;
     if (body == null) {

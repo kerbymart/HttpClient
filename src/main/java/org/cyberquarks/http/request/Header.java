@@ -23,10 +23,23 @@ public class Header {
   }
 
   public String getName() {
-    return this.name;
+    return name;
   }
 
   public String getValue() {
-    return this.value;
+    return value;
+  }
+
+  @Override
+  public boolean equals(Object obj) {
+    if (this == obj) return true;
+    if (obj == null || getClass() != obj.getClass()) return false;
+    Header header = (Header) obj;
+    return name.equals(header.name) && value.equals(header.value);
+  }
+
+  @Override
+  public int hashCode() {
+    return name.hashCode() * 31 + value.hashCode();
   }
 }

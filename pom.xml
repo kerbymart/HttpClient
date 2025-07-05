@@ -24,9 +24,12 @@
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <teavm.version>0.6.0</teavm.version>
-    <flavour.version>0.2.0</flavour.version>
+    <java.version>1.8</java.version>
+    <flavour.version>0.3.2</flavour.version>
+    <teavm.version>0.6.1</teavm.version>
     <jackson.version>2.5.4</jackson.version>
+    <maven.compiler.source>1.8</maven.compiler.source>
+    <maven.compiler.target>1.8</maven.compiler.target>
     <sonatypeOssDistMgmtSnapshotsUrl>https://oss.sonatype.org/content/repositories/snapshots/
     </sonatypeOssDistMgmtSnapshotsUrl>
   </properties>
@@ -73,16 +76,6 @@
       <version>${teavm.version}</version>
     </dependency>
     <dependency>
-      <groupId>org.teavm.flavour</groupId>
-      <artifactId>teavm-flavour-widgets</artifactId>
-      <version>${flavour.version}</version>
-    </dependency>
-    <dependency>
-      <groupId>org.teavm.flavour</groupId>
-      <artifactId>teavm-flavour-rest</artifactId>
-      <version>${flavour.version}</version>
-    </dependency>
-    <dependency>
       <groupId>org.teavm</groupId>
       <artifactId>teavm-jso-apis</artifactId>
       <version>${teavm.version}</version>
@@ -93,6 +86,23 @@
       <version>${teavm.version}</version>
       <scope>test</scope>
     </dependency>
+
+    <dependency>
+      <groupId>com.frequal.flavour</groupId>
+      <artifactId>teavm-flavour-widgets</artifactId>
+      <version>${flavour.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.frequal.flavour</groupId>
+      <artifactId>teavm-flavour-routing</artifactId>
+      <version>${flavour.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.frequal.flavour</groupId>
+      <artifactId>teavm-flavour-rest</artifactId>
+      <version>${flavour.version}</version>
+    </dependency>
+
     <dependency>
       <groupId>com.fasterxml.jackson.core</groupId>
       <artifactId>jackson-annotations</artifactId>
@@ -117,97 +127,58 @@
       <version>3.14.0</version>
     </dependency>
   </dependencies>
-  <repositories>
-    <!-- Snapshot repository -->
-    <repository>
-      <id>oss-jfrog-artifactory-snapshots</id>
-      <name>oss-jfrog-artifactory-snapshots</name>
-      <url>http://oss.jfrog.org/artifactory/oss-snapshot-local</url>
-    </repository>
-    <repository>
-      <id>teavm-dev</id>
-      <url>https://dl.bintray.com/konsoletyper/teavm</url>
-    </repository>
-  </repositories>
 
   <profiles>
     <profile>
       <id>jar</id>
       <build>
-        <resources>
-          <resource>
-            <directory>src/main/java</directory>
-            <includes>
-              <include>**/*.java</include>
-              <include>**/*.properties</include>
-            </includes>
-          </resource>
-          <resource>
-            <directory>src/main/resources</directory>
-            <includes>
-              <include>**/*.properties</include>
-            </includes>
-          </resource>
-        </resources>
         <plugins>
+          <!-- Compiler -->
           <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-compiler-plugin</artifactId>
+            <version>3.8.1</version>
             <configuration>
-              <source>1.8</source>
-              <target>1.8</target>
+              <source>${maven.compiler.source}</source>
+              <target>${maven.compiler.target}</target>
             </configuration>
           </plugin>
+
+          <!-- Surefire for JVM-based tests -->
           <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-surefire-plugin</artifactId>
+            <version>2.22.2</version>
           </plugin>
+
+          <!-- TeaVM plugin for JS test support -->
           <plugin>
-            <groupId>org.apache.maven.plugins</groupId>
-            <artifactId>maven-jar-plugin</artifactId>
-            <configuration>
-              <archive>
-                <manifest>
-                  <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
-                  <addDefaultSpecificationEntries>true</addDefaultSpecificationEntries>
-                </manifest>
-              </archive>
-            </configuration>
+            <groupId>org.teavm</groupId>
+            <artifactId>teavm-maven-plugin</artifactId>
+            <version>${teavm.version}</version>
+            <executions>
+              <execution>
+                <configuration>
+                  <debugInformationGenerated>true</debugInformationGenerated>
+                </configuration>
+              </execution>
+            </executions>
           </plugin>
-          <plugin>
-          <groupId>org.teavm</groupId>
-          <artifactId>teavm-maven-plugin</artifactId>
-          <version>0.6.1</version>
-          <executions>
-            <execution>
-              <configuration>
-                <debugInformationGenerated>true</debugInformationGenerated>
-              </configuration>
-            </execution>
-          </executions>
-        </plugin>
         </plugins>
       </build>
-      <repositories>
-        <!-- Snapshot repository -->
-        <repository>
-          <id>oss-jfrog-artifactory-snapshots</id>
-          <name>oss-jfrog-artifactory-snapshots</name>
-          <url>http://oss.jfrog.org/artifactory/oss-snapshot-local</url>
-        </repository>
-      </repositories>
+
     </profile>
   </profiles>
-  <distributionManagement>
-    <repository>
-      <id>oss-jfrog-artifactory-snapshots</id>
-      <name>oss-jfrog-artifactory-snapshots</name>
-      <url>http://oss.jfrog.org/artifactory/oss-snapshot-local</url>
-    </repository>
-    <snapshotRepository>
-      <id>bintray-dotweblabs-maven</id>
-      <name>oss-jfrog-artifactory-snapshots</name>
-      <url>http://oss.jfrog.org/artifactory/oss-snapshot-local</url>
-    </snapshotRepository>
-  </distributionManagement>
+<!--  <distributionManagement>-->
+<!--    <repository>-->
+<!--      <id>oss-jfrog-artifactory-snapshots</id>-->
+<!--      <name>oss-jfrog-artifactory-snapshots</name>-->
+<!--      <url>http://oss.jfrog.org/artifactory/oss-snapshot-local</url>-->
+<!--    </repository>-->
+<!--    <snapshotRepository>-->
+<!--      <id>bintray-dotweblabs-maven</id>-->
+<!--      <name>oss-jfrog-artifactory-snapshots</name>-->
+<!--      <url>http://oss.jfrog.org/artifactory/oss-snapshot-local</url>-->
+<!--    </snapshotRepository>-->
+<!--  </distributionManagement>-->
 </project>

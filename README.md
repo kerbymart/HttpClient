@@ -35,3 +35,11 @@ mvn clean install
    <version>0-SNAPSHOT</version>
 </dependency>
 ```
+
+
+#### Run test
+
+```
+mvn test -Dteavm.junit.target=target/js-tests -Dteavm.junit.js.runner=htmlunit -Dteavm.junit.js.threads=2
+```
+
