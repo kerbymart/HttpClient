@@ -54,7 +54,7 @@ public class HttpClientTest {
   }
 
   @Test
-  public void testPostRequest() throws Exception {
+  public void Post_request_with_string_body_should_return_non_null_response() throws Exception {
     Set<Header> headers = new HashSet<>();
     headers.add(new Header("Content-Type", "application/json"));
     headers.add(new Header("Accept", "application/json"));
@@ -67,7 +67,7 @@ public class HttpClientTest {
   }
 
   @Test
-  public void testPostInputStreamRequest() throws Exception {
+  public void Post_request_with_input_stream_body_should_return_non_null_response() throws Exception {
     Set<Header> headers = new HashSet<>();
     headers.add(new Header("Content-Type", "application/json"));
     headers.add(new Header("Accept", "application/json"));
@@ -81,7 +81,7 @@ public class HttpClientTest {
   }
 
   @Test
-  public void testPutRequest() throws Exception {
+  public void Put_request_with_string_body_should_return_non_null_response() throws Exception {
     Set<Header> headers = new HashSet<>();
     headers.add(new Header("Content-Type", "application/json"));
     headers.add(new Header("Accept", "application/json"));
@@ -93,7 +93,7 @@ public class HttpClientTest {
   }
 
   @Test
-  public void testGetRequest() throws Exception {
+  public void Get_request_should_return_non_null_response() throws Exception {
     Set<Header> headers = new HashSet<>();
     headers.add(new Header("Content-Type", "application/json"));
     headers.add(new Header("Accept", "application/json"));
@@ -105,7 +105,7 @@ public class HttpClientTest {
   }
 
   @Test
-  public void testDeleteRequest() throws Exception {
+  public void Delete_request_should_return_non_null_response() throws Exception {
     Set<Header> headers = new HashSet<>();
     headers.add(new Header("Content-Type", "application/json"));
     headers.add(new Header("Accept", "application/json"));
