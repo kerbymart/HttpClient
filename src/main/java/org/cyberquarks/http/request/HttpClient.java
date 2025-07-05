@@ -15,10 +15,12 @@ package org.cyberquarks.http.request;
 
 import org.cyberquarks.http.HttpStringBody;
 import org.cyberquarks.http.exception.HttpException;
+import org.cyberquarks.http.response.ByteArrayHttpResponse;
 import org.cyberquarks.http.response.HttpResponse;
 import org.cyberquarks.http.HttpBody;
 import org.cyberquarks.http.response.StringHttpResponse;
 
+import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import java.util.Set;
 import java.util.HashSet;
@@ -32,6 +34,9 @@ import org.teavm.jso.ajax.XMLHttpRequest;
 import org.teavm.jso.ajax.ReadyStateChangeHandler;
 import org.teavm.flavour.widgets.BackgroundWorker;
 import org.teavm.interop.Async;
+import org.teavm.jso.browser.Window;
+import org.teavm.jso.typedarrays.ArrayBuffer;
+import org.teavm.jso.typedarrays.Int8Array;
 
 public class HttpClient {
 
@@ -41,111 +46,94 @@ public class HttpClient {
   public static native HttpResponse get(GetRequest request) throws HttpException, IOException;
 
   private static void get(GetRequest request, AsyncCallback<HttpResponse> callback) {
-    executeAsync(request, "GET", null, callback);
+    executeAsync(request, "GET", null, request.getResponseClass(), callback);
   }
 
   @Async
   public static native HttpResponse put(PutRequest request) throws HttpException, IOException;
 
   private static void put(PutRequest request, AsyncCallback<HttpResponse> callback) {
-    executeAsync(request, "PUT", request.getBody(), callback);
+    executeAsync(request, "PUT", request.getBody(), StringHttpResponse.class, callback);
   }
 
   @Async
   public static native HttpResponse post(PostRequest request) throws HttpException, IOException;
 
   private static void post(PostRequest request, AsyncCallback<HttpResponse> callback) {
-    executeAsync(request, "POST", request.getBody(), callback);
+    executeAsync(request, "POST", request.getBody(), StringHttpResponse.class, callback);
   }
 
   @Async
   public static native HttpResponse delete(DeleteRequest request) throws HttpException, IOException;
 
   private static void delete(DeleteRequest request, AsyncCallback<HttpResponse> callback) {
-    executeAsync(request, "DELETE", null, callback);
+    executeAsync(request, "DELETE", null, StringHttpResponse.class, callback);
   }
 
-  private static void executeAsync(HttpRequest request, String method, HttpBody body, AsyncCallback<HttpResponse> callback) {
-    BackgroundWorker background = new BackgroundWorker();
+  private static <T extends HttpResponse> void executeAsync(HttpRequest request, String method, HttpBody body, Class<T> responseClass, AsyncCallback<HttpResponse> callback) {
+    try {
+      XMLHttpRequest xhr = XMLHttpRequest.create();
+      String url = buildUrlWithQueryParams(request.getUrl(), request.getQueryParameters());
+      xhr.open(method, url, true);
 
-    background.run(new Runnable() {
-      @Override
-      public void run() {
+      if (responseClass == ByteArrayHttpResponse.class) {
+        xhr.setResponseType("arraybuffer");
+      }
+
+      for (Header header : request.getHeaders()) {
+        xhr.setRequestHeader(header.getName(), header.getValue());
+      }
+
+      final int[] timeoutId = new int[1];
+      timeoutId[0] = 0;
+
+      if (DEFAULT_TIMEOUT > 0) {
+        timeoutId[0] = Window.setTimeout(() -> {
+          if (xhr.getReadyState() != XMLHttpRequest.DONE) {
+            xhr.abort();
+            callback.error(new IOException("Request timed out"));
+          }
+        }, DEFAULT_TIMEOUT);
+      }
+
+      xhr.setOnReadyStateChange(() -> {
+        if (xhr.getReadyState() != XMLHttpRequest.DONE) return;
+
         try {
-          XMLHttpRequest xhr = XMLHttpRequest.create();
+          byte[] raw = toByteArray((ArrayBuffer)xhr.getResponse());
+          Set<Header> headers = parseResponseHeaders(xhr.getAllResponseHeaders());
+          T response;
 
-          // Build URL with query parameters
-          String url = buildUrlWithQueryParams(request.getUrl(), request.getQueryParameters());
-
-          // Setup request
-          xhr.open(method, url, true);
-
-          // Set headers
-          for (Header header : request.getHeaders()) {
-            xhr.setRequestHeader(header.getName(), header.getValue());
-          }
-
-          // Setup timeout using a timer
-          final boolean[] completed = {false};
-
-          // Setup response handler
-          xhr.setOnReadyStateChange(new ReadyStateChangeHandler() {
-            @Override
-            public void stateChanged() {
-              if (xhr.getReadyState() == XMLHttpRequest.DONE) {
-                if (!completed[0]) {
-                  completed[0] = true;
-                  try {
-                    int status = xhr.getStatus();
-
-                    if (status == 0) {
-                      callback.error(new IOException("Request failed - network error or timeout"));
-                      return;
-                    }
-
-                    Set<Header> responseHeaders = parseResponseHeaders(xhr.getAllResponseHeaders());
-                    String responseBody = xhr.getResponseText();
-                    HttpResponse response = createStringHttpResponse(status, responseHeaders, responseBody);
-                    callback.complete(response);
-
-                  } catch (Exception e) {
-                    callback.error(e);
-                  }
-                }
-              }
-            }
-          });
-
-          BackgroundWorker timeoutWorker = new BackgroundWorker();
-          timeoutWorker.run(new Runnable() {
-            @Override
-            public void run() {
-              try {
-                Thread.sleep(DEFAULT_TIMEOUT);
-                if (!completed[0]) {
-                  completed[0] = true;
-                  xhr.abort();
-                  callback.error(new IOException("Request timed out after " + DEFAULT_TIMEOUT + "ms"));
-                }
-              } catch (InterruptedException e) {
-                // Ignore interruption
-              }
-            }
-          });
-
-          // Send request
-          if (body != null) {
-            String bodyContent = getBodyContent(body);
-            xhr.send(bodyContent);
+          if (responseClass == StringHttpResponse.class) {
+            String text = new String(raw, StandardCharsets.UTF_8);
+            response = responseClass.cast(
+                    new StringHttpResponse(xhr.getStatus(), headers, text)
+            );
+          } else if (responseClass == ByteArrayHttpResponse.class) {
+            response = responseClass.cast(
+                    new ByteArrayHttpResponse(xhr.getStatus(), headers, raw)
+            );
           } else {
-            xhr.send();
+            callback.error(new IllegalArgumentException(
+                    "Unsupported response type: " + responseClass.getName()
+            ));
+            return;
           }
 
+          callback.complete(response);
         } catch (Exception e) {
           callback.error(e);
         }
+      });
+
+      if (body != null) {
+        xhr.send(getBodyContent(body));
+      } else {
+        xhr.send();
       }
-    });
+    } catch (Exception e) {
+      callback.error(e);
+    }
   }
 
   private static String buildUrlWithQueryParams(URL baseUrl, Map<String, String> queryParams) {
@@ -213,5 +201,14 @@ public class HttpClient {
       return ((HttpStringBody) body).getValue();
     }
     return null;
+  }
+
+  private static byte[] toByteArray(ArrayBuffer arrayBuffer) {
+    Int8Array int8Array = Int8Array.create(arrayBuffer);
+    byte[] bytes = new byte[int8Array.getLength()];
+    for (int i = 0; i < bytes.length; i++) {
+      bytes[i] = int8Array.get(i);
+    }
+    return bytes;
   }
 }

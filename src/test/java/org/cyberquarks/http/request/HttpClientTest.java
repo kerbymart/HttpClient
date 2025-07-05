@@ -15,7 +15,9 @@ package org.cyberquarks.http.request;
 
 import org.cyberquarks.http.HttpInputStreamBody;
 import org.cyberquarks.http.HttpStringBody;
+import org.cyberquarks.http.response.ByteArrayHttpResponse;
 import org.cyberquarks.http.response.HttpResponse;
+import org.cyberquarks.http.response.StringHttpResponse;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -23,6 +25,7 @@ import org.junit.runners.MethodSorters;
 import org.teavm.junit.SkipJVM;
 import org.teavm.junit.TeaVMTestRunner;
 
+import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.util.HashMap;
@@ -35,6 +38,7 @@ import org.cyberquarks.http.util.Base64;
 import static junit.framework.TestCase.assertNotNull;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 @RunWith(TeaVMTestRunner.class)
 @SkipJVM
@@ -82,7 +86,7 @@ public class HttpClientTest {
     Set<Header> headers = new HashSet<>();
     headers.add(new Header("Content-Type", "application/json"));
     headers.add(new Header("Accept", "application/json"));
-    GetRequest request = new GetRequest("http://httpbin.org/get", headers, new HashMap<>());
+    GetRequest<StringHttpResponse> request = new GetRequest("http://httpbin.org/get", headers, new HashMap<>(), StringHttpResponse.class);
     HttpResponse<InputStream> response = HttpClient.get(request);
     InputStream body = response.getBody();
     assertNotNull(body);
@@ -109,7 +113,7 @@ public class HttpClientTest {
     queryParameters.put("param1", "value1");
     queryParameters.put("param2", "value2");
 
-    GetRequest request = new GetRequest("http://httpbin.org/get", headers, queryParameters);
+    GetRequest<StringHttpResponse> request = new GetRequest("http://httpbin.org/get", headers, queryParameters, StringHttpResponse.class);
     HttpResponse<InputStream> response = HttpClient.get(request);
     InputStream body = response.getBody();
     assertNotNull(body);
@@ -135,7 +139,7 @@ public class HttpClientTest {
     String encodedAuth = Base64.btoa(auth.getBytes());
     headers.add(new Header("Authorization", "Basic " + encodedAuth));
 
-    GetRequest request = new GetRequest("http://httpbin.org/basic-auth/user/password", headers, new HashMap<>());
+    GetRequest<StringHttpResponse> request = new GetRequest("http://httpbin.org/basic-auth/user/password", headers, new HashMap<>(), StringHttpResponse.class);
     HttpResponse<InputStream> response = HttpClient.get(request);
     assertEquals(Integer.valueOf(200), response.getCode());
     assertNotNull(response.getBody());
@@ -148,7 +152,7 @@ public class HttpClientTest {
     String encodedAuth = Base64.btoa(auth.getBytes());
     headers.add(new Header("Authorization", "Basic " + encodedAuth));
 
-    GetRequest request = new GetRequest("http://httpbin.org/basic-auth/user/password", headers, new HashMap<>());
+    GetRequest<StringHttpResponse> request = new GetRequest("http://httpbin.org/basic-auth/user/password", headers, new HashMap<>(), StringHttpResponse.class);
     HttpResponse<InputStream> response = HttpClient.get(request);
     assertEquals(Integer.valueOf(401), response.getCode());
   }
@@ -158,7 +162,7 @@ public class HttpClientTest {
     Set<Header> headers = new HashSet<>();
     headers.add(new Header("Authorization", "Bearer valid-token"));
 
-    GetRequest request = new GetRequest("http://httpbin.org/bearer", headers, new HashMap<>());
+    GetRequest<StringHttpResponse> request = new GetRequest("http://httpbin.org/bearer", headers, new HashMap<>(), StringHttpResponse.class);
     HttpResponse<InputStream> response = HttpClient.get(request);
     assertEquals(Integer.valueOf(200), response.getCode());
     assertNotNull(response.getBody());
@@ -169,7 +173,7 @@ public class HttpClientTest {
     Set<Header> headers = new HashSet<>();
     headers.add(new Header("Accept", "application/xml"));
 
-    GetRequest request = new GetRequest("http://httpbin.org/xml", headers, new HashMap<>());
+    GetRequest<StringHttpResponse> request = new GetRequest("http://httpbin.org/xml", headers, new HashMap<>(), StringHttpResponse.class);
     HttpResponse<InputStream> response = HttpClient.get(request);
     assertEquals(Integer.valueOf(200), response.getCode());
     assertNotNull(response.getBody());
@@ -192,14 +196,14 @@ public class HttpClientTest {
     Set<Header> headers = new HashSet<>();
     headers.add(new Header("Content-Type", "application/json"));
 
-    GetRequest request = new GetRequest("malformed-url", headers, new HashMap<>());
+    GetRequest<StringHttpResponse> request = new GetRequest("malformed-url", headers, new HashMap<>(), StringHttpResponse.class);
     HttpClient.get(request);
   }
 
   @Test
   public void Request_to_status_endpoint_should_return_specified_status_code() throws Exception {
     Set<Header> headers = new HashSet<>();
-    GetRequest request = new GetRequest("http://httpbin.org/status/404", headers, new HashMap<>());
+    GetRequest<StringHttpResponse> request = new GetRequest("http://httpbin.org/status/404", headers, new HashMap<>(), StringHttpResponse.class);
     HttpResponse<InputStream> response = HttpClient.get(request);
     assertEquals(Integer.valueOf(404), response.getCode());
   }
@@ -207,7 +211,7 @@ public class HttpClientTest {
   @Test
   public void Get_cookies_should_return_non_null_response() throws Exception {
     Set<Header> headers = new HashSet<>();
-    GetRequest request = new GetRequest("http://httpbin.org/cookies", headers, new HashMap<>());
+    GetRequest<StringHttpResponse> request = new GetRequest("http://httpbin.org/cookies", headers, new HashMap<>(), StringHttpResponse.class);
     HttpResponse<InputStream> response = HttpClient.get(request);
     assertEquals(Integer.valueOf(200), response.getCode());
     assertNotNull(response.getBody());
@@ -220,7 +224,7 @@ public class HttpClientTest {
     queryParameters.put("cookie1", "value1");
     queryParameters.put("cookie2", "value2");
 
-    GetRequest request = new GetRequest("http://httpbin.org/cookies/set", headers, queryParameters);
+    GetRequest<StringHttpResponse> request = new GetRequest("http://httpbin.org/cookies/set", headers, queryParameters, StringHttpResponse.class);
     HttpResponse<InputStream> response = HttpClient.get(request);
     assertEquals(Integer.valueOf(200), response.getCode());
     assertNotNull(response.getBody());
@@ -229,7 +233,7 @@ public class HttpClientTest {
   @Test
   public void Delayed_response_should_be_handled_correctly() throws Exception {
     Set<Header> headers = new HashSet<>();
-    GetRequest request = new GetRequest("http://httpbin.org/delay/2", headers, new HashMap<>());
+    GetRequest<StringHttpResponse> request = new GetRequest("http://httpbin.org/delay/2", headers, new HashMap<>(), StringHttpResponse.class);
     long startTime = System.currentTimeMillis();
     HttpResponse<InputStream> response = HttpClient.get(request);
     long endTime = System.currentTimeMillis();
@@ -237,5 +241,25 @@ public class HttpClientTest {
     assertNotNull(response.getBody());
     long elapsedTime = endTime - startTime;
     assertTrue(elapsedTime >= 2000 && elapsedTime < 3000); // Allow some buffer time
+  }
+
+  @Test
+  public void Download_100MB_file_should_return_correct_size() {
+    try {
+      Set<Header> headers = new HashSet<>();
+      GetRequest<ByteArrayHttpResponse> request
+              = new GetRequest(
+                      "https://ash-speed.hetzner.com/100MB.bin",
+                      headers,
+                      new HashMap<>(),
+                      ByteArrayHttpResponse.class);
+      HttpResponse<byte[]> response = HttpClient.get(request);
+
+      assertEquals(Integer.valueOf(200), response.getCode());
+      assertNotNull(response.getBody());
+      assertEquals(100 * 1024 * 1024, response.getBody().length);
+    } catch (Throwable t) {
+      fail("Test failed: " + t.getMessage());
+    }
   }
 }

@@ -13,6 +13,8 @@
  */
 package org.cyberquarks.http.request;
 
+import org.cyberquarks.http.response.HttpResponse;
+
 import java.net.MalformedURLException;
 import java.util.Map;
 import java.util.Set;
@@ -21,5 +23,11 @@ public class HttpRequestWithoutBody extends HttpRequest {
   public HttpRequestWithoutBody(String url, Set<Header> headers, Map<String, String> queryParameters)
       throws MalformedURLException {
     super(url, headers, queryParameters);
+  }
+
+  public HttpRequestWithoutBody(String url, Set<Header> headers, Map<String, String> queryParameters,
+                                Class<? extends HttpResponse> responseClass)
+          throws MalformedURLException {
+    super(url, headers, queryParameters, responseClass);
   }
 }

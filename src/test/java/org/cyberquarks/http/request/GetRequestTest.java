@@ -13,6 +13,7 @@
  */
 package org.cyberquarks.http.request;
 
+import org.cyberquarks.http.response.StringHttpResponse;
 import org.junit.Test;
 
 import java.net.MalformedURLException;
@@ -43,7 +44,7 @@ public class GetRequestTest {
         headers.add(new Header("Content-Type", "application/json"));
         Map<String, String> queryParameters = new HashMap<>();
         queryParameters.put("param1", "value1");
-        GetRequest request = new GetRequest(url, headers, queryParameters);
+        GetRequest<StringHttpResponse> request = new GetRequest(url, headers, queryParameters, StringHttpResponse.class);
         assertEquals(url, request.getUrl().toString());
         assertEquals(headers, request.getHeaders());
         assertEquals(queryParameters, request.getQueryParameters());

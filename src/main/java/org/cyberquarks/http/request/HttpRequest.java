@@ -13,6 +13,9 @@
  */
 package org.cyberquarks.http.request;
 
+import org.cyberquarks.http.response.HttpResponse;
+import org.cyberquarks.http.response.StringHttpResponse;
+
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.HashMap;
@@ -23,6 +26,7 @@ import java.util.Set;
 public abstract class HttpRequest {
   protected static Set<Header> EmptyHeaders = new HashSet<Header>();
   protected static Map<String, String> EmptyParams = new HashMap<>();
+  protected static Class<? extends HttpResponse> responseClass;
 
   private URL url;
   private Set<Header> headers;
@@ -32,6 +36,14 @@ public abstract class HttpRequest {
     this.url = new URL(url);
     this.headers = headers;
     this.queryParameters = queryParameters;
+  }
+
+  public HttpRequest(String url, Set<Header> headers, Map<String, String> queryParameters,
+                     Class<? extends HttpResponse> responseClass) throws MalformedURLException {
+    this.url = new URL(url);
+    this.headers = headers;
+    this.queryParameters = queryParameters;
+    this.responseClass = responseClass;
   }
 
   public URL getUrl() {
@@ -46,5 +58,11 @@ public abstract class HttpRequest {
     return queryParameters;
   }
 
+  public static Class<? extends HttpResponse> getResponseClass() {
+    if (responseClass == null) {
+      responseClass = StringHttpResponse.class;
+    }
+    return responseClass;
+  }
 }
 

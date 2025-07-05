@@ -13,15 +13,25 @@
  */
 package org.cyberquarks.http.request;
 
+import org.cyberquarks.http.response.HttpResponse;
+
 import java.net.MalformedURLException;
 import java.util.Map;
 import java.util.Set;
 
-public class GetRequest extends HttpRequestWithoutBody {
+public class GetRequest<T extends HttpResponse> extends HttpRequestWithoutBody {
+
+  private Class<? extends HttpResponse> responseClass;
 
   public GetRequest(String url, Set<Header> headers, Map<String, String> queryParameters)
       throws MalformedURLException {
     super(url, headers, queryParameters);
+  }
+
+  public GetRequest(String url, Set<Header> headers, Map<String, String> queryParameters,
+                    Class<? extends HttpResponse> responseClass)
+          throws MalformedURLException {
+    super(url, headers, queryParameters, responseClass);
   }
 
   public GetRequest(String url, Set<Header> headers)
